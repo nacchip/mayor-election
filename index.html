@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выборы мэра в Посеевской области</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #a8d0ff;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 150px;
+            height: 150px;
+            background-color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        .logo-text {
+            color: #1e3c72;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #4dabf7;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        input, textarea, select {
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .candidates {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .candidate {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .candidate:hover {
+            transform: translateY(-5px);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .candidate.selected {
+            border-color: #4dabf7;
+            background-color: rgba(77, 171, 247, 0.2);
+        }
+        
+        .candidate-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            border: 3px solid #fff;
+        }
+        
+        .candidate-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .candidate-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: #4dabf7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-end;
+        }
+        
+        .btn:hover {
+            background-color: #339af0;
+        }
+        
+        .btn:disabled {
+            background-color: #74c0fc;
+            cursor: not-allowed;
+        }
+        
+        .result-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #a8d0ff;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Выборы мэра в Посеевской области</h1>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <!-- Шаг 1: Загрузка -->
+        <div class="step active" id="step-loading">
+            <div class="loading-screen">
+                <div class="logo">
+                    <div class="logo-text">ПО</div>
+                </div>
+                <h2>Загрузка системы голосования</h2>
+                <p>Пожалуйста, подождите...</p>
+            </div>
+        </div>
+        
+        <!-- Шаг 2: Ввод данных -->
+        <div class="step" id="step-user-info">
+            <h2>Введите ваши данные</h2>
+            <form id="user-info-form">
+                <input type="text" id="last-name" placeholder="Фамилия" required>
+                <input type="text" id="first-name" placeholder="Имя" required>
+                <button type="button" class="btn" id="btn-to-candidates">Продолжить</button>
+            </form>
+        </div>
+        
+        <!-- Шаг 3: Выбор кандидата -->
+        <div class="step" id="step-candidates">
+            <h2>Выберите кандидата на пост мэра</h2>
+            <div class="candidates" id="candidates-container">
+                <!-- Кандидаты будут добавлены через JavaScript -->
+            </div>
+            <button class="btn" id="btn-to-reason" disabled>Продолжить</button>
+        </div>
+        
+        <!-- Шаг 4: Причина выбора -->
+        <div class="step" id="step-reason">
+            <h2>Почему вы выбрали этого кандидата?</h2>
+            <form id="reason-form">
+                <textarea id="reason" placeholder="Опишите причину вашего выбора..." required></textarea>
+                <button type="button" class="btn" id="btn-to-result">Отправить голос</button>
+            </form>
+        </div>
+        
+        <!-- Шаг 5: Результат -->
+        <div class="step" id="step-result">
+            <h2>Ваш голос принят!</h2>
+            <div class="result-card">
+                <div class="result-item">
+                    <span class="result-label">Избиратель:</span> 
+                    <span id="result-user-name"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Выбранный кандидат:</span> 
+                    <span id="result-candidate-name"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Описание кандидата:</span> 
+                    <span id="result-candidate-description"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Причина выбора:</span> 
+                    <span id="result-reason"></span>
+                </div>
+            </div>
+            <div class="thank-you">
+                <p>Спасибо за участие в выборах!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные кандидатов
+        const candidates = [
+            {
+                id: 1,
+                name: "Иван Петров",
+                description: "Опытный управленец с 15-летним стажем. Фокус на развитие инфраструктуры.",
+                photo: "https://randomuser.me/api/portraits/men/32.jpg"
+            },
+            {
+                id: 2,
+                name: "Ольга Сидорова",
+                description: "Экономист, предлагает снижение налогов для малого бизнеса.",
+                photo: "https://randomuser.me/api/portraits/women/44.jpg"
+            },
+            {
+                id: 3,
+                name: "Алексей Козлов",
+                description: "Эколог, программа направлена на озеленение города.",
+                photo: "https://randomuser.me/api/portraits/men/67.jpg"
+            },
+            {
+                id: 4,
+                name: "Мария Иванова",
+                description: "Образовательный реформатор, план модернизации школ.",
+                photo: "https://randomuser.me/api/portraits/women/68.jpg"
+            },
+            {
+                id: 5,
+                name: "Дмитрий Смирнов",
+                description: "Бывший спортсмен, развивает программы здорового образа жизни.",
+                photo: "https://randomuser.me/api/portraits/men/75.jpg"
+            },
+            {
+                id: 6,
+                name: "Елена Кузнецова",
+                description: "Социальный работник, улучшение условий для пенсионеров.",
+                photo: "https://randomuser.me/api/portraits/women/26.jpg"
+            },
+            {
+                id: 7,
+                name: "Сергей Васильев",
+                description: "IT-специалист, цифровизация городских услуг.",
+                photo: "https://randomuser.me/api/portraits/men/81.jpg"
+            }
+        ];
+
+        // Элементы DOM
+        const steps = document.querySelectorAll('.step');
+        const progressBar = document.getElementById('progress');
+        const candidatesContainer = document.getElementById('candidates-container');
+        const btnToCandidates = document.getElementById('btn-to-candidates');
+        const btnToReason = document.getElementById('btn-to-reason');
+        const btnToResult = document.getElementById('btn-to-result');
+        
+        // Переменные для хранения данных
+        let currentStep = 0;
+        let userData = {
+            firstName: '',
+            lastName: '',
+            candidateId: null,
+            reason: ''
+        };
+        let selectedCandidate = null;
+
+        // Инициализация кандидатов
+        function initCandidates() {
+            candidatesContainer.innerHTML = '';
+            candidates.forEach(candidate => {
+                const candidateElement = document.createElement('div');
+                candidateElement.className = 'candidate';
+                candidateElement.innerHTML = `
+                    <img src="${candidate.photo}" alt="${candidate.name}" class="candidate-photo">
+                    <div class="candidate-name">${candidate.name}</div>
+                    <div class="candidate-description">${candidate.description}</div>
+                `;
+                candidateElement.addEventListener('click', () => selectCandidate(candidate.id));
+                candidatesContainer.appendChild(candidateElement);
+            });
+        }
+
+        // Выбор кандидата
+        function selectCandidate(candidateId) {
+            // Сброс предыдущего выбора
+            document.querySelectorAll('.candidate').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Выбор нового кандидата
+            const candidateElement = document.querySelector(`.candidate:nth-child(${candidateId})`);
+            candidateElement.classList.add('selected');
+            
+            userData.candidateId = candidateId;
+            selectedCandidate = candidates.find(c => c.id === candidateId);
+            btnToReason.disabled = false;
+        }
+
+        // Обновление прогресс-бара
+        function updateProgress() {
+            const progress = (currentStep / (steps.length - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Переход к следующему шагу
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                steps[currentStep].classList.remove('active');
+                currentStep++;
+                steps[currentStep].classList.add('active');
+                updateProgress();
+            }
+        }
+
+        // Показ результатов
+        function showResults() {
+            document.getElementById('result-user-name').textContent = 
+                `${userData.lastName} ${userData.firstName}`;
+            document.getElementById('result-candidate-name').textContent = 
+                selectedCandidate.name;
+            document.getElementById('result-candidate-description').textContent = 
+                selectedCandidate.description;
+            document.getElementById('result-reason').textContent = 
+                userData.reason;
+        }
+
+        // Обработчики событий
+        btnToCandidates.addEventListener('click', () => {
+            userData.firstName = document.getElementById('first-name').value;
+            userData.lastName = document.getElementById('last-name').value;
+            
+            if (userData.firstName && userData.lastName) {
+                nextStep();
+            } else {
+                alert('Пожалуйста, заполните все поля');
+            }
+        });
+
+        btnToReason.addEventListener('click', () => {
+            if (userData.candidateId) {
+                nextStep();
+            }
+        });
+
+        btnToResult.addEventListener('click', () => {
+            userData.reason = document.getElementById('reason').value;
+            
+            if (userData.reason) {
+                showResults();
+                nextStep();
+            } else {
+                alert('Пожалуйста, укажите причину вашего выбора');
+            }
+        });
+
+        // Имитация загрузки
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                initCandidates();
+                nextStep(); // Переход к шагу ввода данных после загрузки
+            }, 2000);
+        });
+    </script>
+</body>
+  </html>
